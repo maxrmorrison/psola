@@ -143,7 +143,6 @@ def from_files_to_files(audio_files,
     vocode_fn = functools.partial(from_file_to_file,
                                   fmin=fmin,
                                   fmax=fmax,
-                                  hopsize=hopsize,
                                   tmpdir=tmpdir)
 
     # Setup iterator
@@ -340,7 +339,7 @@ def time_stretch(audio,
         [alignment.end()])
 
     # Relative phoneme speeds
-    rates = pypar.rate_difference_per_phoneme(alignment, target_alignment)
+    rates = pypar.compare.per_phoneme_rate(alignment, target_alignment)
     rates = np.array(rates)
     rates[rates < .0625] = .0625
 

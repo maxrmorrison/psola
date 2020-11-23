@@ -32,10 +32,6 @@ def parse_args():
                         type=int,
                         default=500,
                         help='The maximum allowable frequency in Hz')
-    parser.add_argument('--hopsize',
-                        type=int,
-                        default=psola.HOPSIZE,
-                        help='The hopsize of the input pitch in milliseconds')
 
     # Intermediary file locations
     parser.add_argument('--tmpdir',
@@ -61,5 +57,4 @@ if __name__ == '__main__':
                               args.target_pitch_files,
                               args.fmin,
                               args.fmax,
-                              args.hopsize,
                               args.tmpdir)

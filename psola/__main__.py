@@ -16,9 +16,12 @@ def parse_args():
     parser.add_argument('--audio_files',
                         nargs='+',
                         help='The speech signal to process')
+    parser.add_argument('--source_alignment_files',
+                        nargs='+',
+                        help='The files containing the original alignments')
     parser.add_argument('--target_alignment_files',
                         nargs='+',
-                        help='The target phoneme alignment')
+                        help='The files containing the target alignments')
     parser.add_argument('--target_pitch_files',
                         nargs='+',
                         help='The target pitch contour')
@@ -53,6 +56,7 @@ if __name__ == '__main__':
     # Vocode and save to disk
     psola.from_files_to_files(args.audio_files,
                               args.output_files,
+                              args.source_alignment_files,
                               args.target_alignment_files,
                               args.target_pitch_files,
                               args.fmin,

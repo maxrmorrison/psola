@@ -32,6 +32,8 @@ def from_file(audio_file,
     Arguments
         audio_file : string
             The file containing the speech signal to process
+        source_alignment_file : string or None
+            The file containing the original alignment
         target_alignment_file : string or None
             The file containing the target alignment
         target_pitch_file : string or None
@@ -73,6 +75,7 @@ def from_file(audio_file,
 
 def from_file_to_file(audio_file,
                       output_file,
+                      source_alignment_file=None,
                       target_alignment_file=None,
                       target_pitch_file=None,
                       fmin=40,
@@ -85,6 +88,8 @@ def from_file_to_file(audio_file,
             The file containing the speech signal to process
         output_file : string
             The file to save the vocoded speech
+        source_alignment_file : string or None
+            The file containing the original alignment
         target_alignment_file : string or None
             The file containing the target alignment
         target_pitch_file : string or None
@@ -98,6 +103,7 @@ def from_file_to_file(audio_file,
     """
     # Load and vocode
     audio, sample_rate = from_file(audio_file,
+                                   source_alignment_file,
                                    target_alignment_file,
                                    target_pitch_file,
                                    fmin,
@@ -110,6 +116,7 @@ def from_file_to_file(audio_file,
 
 def from_files_to_files(audio_files,
                         output_files,
+                        source_alignment_files=None,
                         target_alignment_files=None,
                         target_pitch_files=None,
                         fmin=40,
@@ -122,6 +129,8 @@ def from_files_to_files(audio_files,
             The files containing the speech signals to process
         output_files : list
             The files to save the vocoded speech
+        source_alignment_files : string or None
+            The files containing the original alignments
         target_alignment_files : list or None
             The files containing the target alignments
         target_pitch_files : list or None
@@ -134,6 +143,8 @@ def from_files_to_files(audio_files,
             Directory to save intermediate values. If None, uses system default.
     """
     # Expand None-valued defaults
+    if source_alignment_files is None:
+        source_alignment_files = [None] * len(audio_files)
     if target_alignment_files is None:
         target_alignment_files = [None] * len(audio_files)
     if target_pitch_files is None:
@@ -148,9 +159,10 @@ def from_files_to_files(audio_files,
     # Setup iterator
     iterator = zip(audio_files,
                    output_files,
+                   source_alignment_files,
                    target_alignment_files,
                    target_pitch_files)
-    iterator = tqdm.tqdm(iterator, dynamic_ncols=True)
+    iterator = tqdm.tqdm(iterator, desc='psola', dynamic_ncols=True)
     for item in iterator:
 
         # Vocode and save to disk
@@ -159,7 +171,7 @@ def from_files_to_files(audio_files,
 
 def vocode(audio,
            sample_rate,
-           alignment=None,
+           source_alignment=None,
            target_alignment=None,
            target_pitch=None,
            fmin=40,
@@ -172,7 +184,7 @@ def vocode(audio,
             The speech signal to process
         sample_rate : int
             The audio sampling rate.
-        alignment : pypar.Alignment
+        source_alignment : pypar.Alignment
             The current alignment if performing time-stretching
         target_alignment : pypar.Alignment
             The target alignment if performing time-stretching
@@ -200,10 +212,10 @@ def vocode(audio,
 
     try:
         # Time-stretch
-        if isinstance(alignment, pypar.Alignment) and \
+        if isinstance(source_alignment, pypar.Alignment) and \
            isinstance(target_alignment, pypar.Alignment):
             audio = time_stretch(audio,
-                                 alignment,
+                                 source_alignment,
                                  target_alignment,
                                  fmin,
                                  fmax,
@@ -335,7 +347,7 @@ def time_stretch(audio,
     """
     # Phoneme start and end times
     times = np.array(
-        [phoneme.start for phoneme in alignment.phonemes()] +
+        [phoneme.start() for phoneme in alignment.phonemes()] +
         [alignment.end()])
 
     # Relative phoneme speeds

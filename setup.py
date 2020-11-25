@@ -13,7 +13,8 @@ setup(
     author_email='maxrmorrison@gmail.com',
     url='https://github.com/maxrmorrison/psola',
     install_requires=['numpy',
-                      'pypar',
+                    # TEMPORARY
+                    #   'pypar',
                       'torch',
                       'torchaudio',
                       'tqdm',

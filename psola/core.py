@@ -355,9 +355,6 @@ def time_stretch(audio,
     rates = np.array(rates)
     rates[rates < .0625] = .0625
 
-    # TEMPORARY - rate bounding
-    rates = np.clip(rates, .6, 1.67)
-
     # Write duration to disk
     duration_file = os.path.join(tmpdir, 'duration.txt')
     write_duration_tier(duration_file, times, rates)

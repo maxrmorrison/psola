@@ -58,7 +58,7 @@ def from_file(audio_file,
     target_alignment = None if target_alignment_file is None \
         else pypar.Alignment(target_alignment_file)
     target_pitch = None if target_pitch_file is None \
-        else torch.load(target_pitch_file)
+        else np.load(target_pitch_file)
 
     # Vocode
     audio = vocode(audio,
@@ -289,11 +289,10 @@ def pitch_shift(audio, pitch, fmin, fmax, sample_rate, tmpdir):
             The pitch-shifted audio
     """
     # Don't edit in-place
-    pitch = pitch.clone()
+    pitch = np.copy(pitch)
 
     # Convert unvoiced tokens to 0.
-    pitch[torch.isnan(pitch)] = 0.
-    pitch = pitch.detach().cpu().numpy()
+    pitch[np.isnan(pitch)] = 0.
 
     # Write pitch to disk
     pitch_file = os.path.join(tmpdir, 'pitch.txt')

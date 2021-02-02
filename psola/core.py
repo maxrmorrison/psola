@@ -273,7 +273,7 @@ def pitch_shift(audio, pitch, fmin, fmax, sample_rate, tmpdir):
     Arguments
         audio : torch.tensor(shape=(1, time))
             The speech signal to process
-        pitch : torch.tensor(shape=(1, frames))
+        pitch : np.array(shape=(frames,))
             The target pitch contour
         fmin : int
             The minimum allowable frequency in Hz.
@@ -296,8 +296,7 @@ def pitch_shift(audio, pitch, fmin, fmax, sample_rate, tmpdir):
 
     # Write pitch to disk
     pitch_file = os.path.join(tmpdir, 'pitch.txt')
-    write_pitch_tier(
-        pitch_file, pitch.squeeze(0), float(audio.size(1)) / sample_rate)
+    write_pitch_tier(pitch_file, pitch, float(audio.size(1)) / sample_rate)
 
     # Read pitch file into praat
     pitch_tier = Data.read(pitch_file)

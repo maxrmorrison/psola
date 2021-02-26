@@ -22,6 +22,9 @@ def parse_args():
     parser.add_argument('--target_alignment_files',
                         nargs='+',
                         help='The files containing the target alignments')
+    parser.add_argument('--constant_stretch',
+                        type=float,
+                        help='A constant value for time-stretching')
     parser.add_argument('--target_pitch_files',
                         nargs='+',
                         help='The target pitch contour')
@@ -45,14 +48,4 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    # Parse command-line arguments
-    args = parse_args()
-
-    # Vocode and save to disk
-    psola.from_files_to_files(args.audio_files,
-                              args.output_files,
-                              args.source_alignment_files,
-                              args.target_alignment_files,
-                              args.target_pitch_files,
-                              args.fmin,
-                              args.fmax)
+    psola.from_files_to_files(**vars(parse_args()))

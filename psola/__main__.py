@@ -36,11 +36,6 @@ def parse_args():
                         default=500,
                         help='The maximum allowable frequency in Hz')
 
-    # Intermediary file locations
-    parser.add_argument('--tmpdir',
-                        help='Directory to save intermediate values. ' +
-                             'Defaults to the system default.')
-
     # Output file location
     parser.add_argument('--output_files',
                         nargs='+',
@@ -60,5 +55,4 @@ if __name__ == '__main__':
                               args.target_alignment_files,
                               args.target_pitch_files,
                               args.fmin,
-                              args.fmax,
-                              args.tmpdir)
+                              args.fmax)

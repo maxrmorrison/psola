@@ -32,11 +32,11 @@ def parse_args():
     # DSP parameters
     parser.add_argument('--fmin',
                         type=int,
-                        default=40,
+                        default=psola.FMIN,
                         help='The minimum allowable frequency in Hz')
     parser.add_argument('--fmax',
                         type=int,
-                        default=500,
+                        default=psola.FMAX,
                         help='The maximum allowable frequency in Hz')
 
     # Output file location

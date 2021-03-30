@@ -1,19 +1,30 @@
 import functools
 import os
-import shutil
 import tempfile
-import uuid
 
 import numpy as np
 import pypar
 import soundfile
-import torch
-import torchaudio
 import tqdm
 from parselmouth import Data, praat, Sound
 
 
-__all__ = ['from_file', 'from_file_to_file', 'from_files_to_files', 'vocode']
+__all__ = ['FMAX',
+           'FMIN',
+           'from_file',
+           'from_file_to_file',
+           'from_files_to_files',
+           'to_file',
+           'vocode']
+
+
+###############################################################################
+# Constants
+###############################################################################
+
+
+FMIN = 40.
+FMAX = 550.
 
 
 ###############################################################################
@@ -24,10 +35,10 @@ __all__ = ['from_file', 'from_file_to_file', 'from_files_to_files', 'vocode']
 def from_file(audio_file,
               source_alignment_file=None,
               target_alignment_file=None,
-              constant_stretch=None,
               target_pitch_file=None,
-              fmin=40,
-              fmax=500):
+              constant_stretch=None,
+              fmin=FMIN,
+              fmax=FMAX):
     """Performs vocoding using Praat
 
     Arguments
@@ -37,23 +48,23 @@ def from_file(audio_file,
             The file containing the original alignment
         target_alignment_file : string or None
             The file containing the target alignment
-        constant_stretch : float or None
-            A constant value for time-stretching
         target_pitch_file : string or None
             The file containing the target pitch
+        constant_stretch : float or None
+            A constant value for time-stretching
         fmin : int
             The minimum allowable frequency in Hz.
         fmax : int
             The maximum allowable frequency in Hz.
 
     Returns
-        audio : torch.tensor(shape=(1, time))
+        audio : np.array(shape=(samples,))
             The vocoded audio
         sample_rate : int
             The audio sampling rate
     """
     # Load inputs from file
-    audio, sample_rate = torchaudio.load(audio_file)
+    audio, sample_rate = soundfile.read(audio_file)
     source_alignment = None if source_alignment_file is None \
         else pypar.Alignment(source_alignment_file)
     target_alignment = None if target_alignment_file is None \
@@ -66,8 +77,8 @@ def from_file(audio_file,
                    sample_rate,
                    source_alignment,
                    target_alignment,
-                   constant_stretch,
                    target_pitch,
+                   constant_stretch,
                    fmin,
                    fmax)
 
@@ -78,10 +89,10 @@ def from_file_to_file(audio_file,
                       output_file,
                       source_alignment_file=None,
                       target_alignment_file=None,
-                      constant_stretch=None,
                       target_pitch_file=None,
-                      fmin=40,
-                      fmax=500):
+                      constant_stretch=None,
+                      fmin=FMIN,
+                      fmax=FMAX):
     """Performs vocoding using Praat and save to disk
 
     Arguments
@@ -93,10 +104,10 @@ def from_file_to_file(audio_file,
             The file containing the original alignment
         target_alignment_file : string or None
             The file containing the target alignment
-        constant_stretch : float or None
-            A constant value for time-stretching
         target_pitch_file : string or None
             The file containing the target pitch
+        constant_stretch : float or None
+            A constant value for time-stretching
         fmin : int
             The minimum allowable frequency in Hz.
         fmax : int
@@ -106,25 +117,23 @@ def from_file_to_file(audio_file,
     audio, sample_rate = from_file(audio_file,
                                    source_alignment_file,
                                    target_alignment_file,
-                                   constant_stretch,
                                    target_pitch_file,
+                                   constant_stretch,
                                    fmin,
                                    fmax)
 
     # Save to disk
-    # torchaudio fails horribly here, writing a file of all zeros
-    # torchaudio.save(output_file, audio, sample_rate)
-    soundfile.write(output_file, audio.numpy().squeeze(), sample_rate)
+    save(output_file, audio, sample_rate)
 
 
 def from_files_to_files(audio_files,
                         output_files,
                         source_alignment_files=None,
                         target_alignment_files=None,
-                        constant_stretch=None,
                         target_pitch_files=None,
-                        fmin=40,
-                        fmax=500):
+                        constant_stretch=None,
+                        fmin=FMIN,
+                        fmax=FMAX):
     """Performs vocoding using Praat and save to disk
 
     Arguments
@@ -136,10 +145,10 @@ def from_files_to_files(audio_files,
             The files containing the original alignments
         target_alignment_files : list or None
             The files containing the target alignments
-        constant_stretch : float or None
-            A constant value for time-stretching
         target_pitch_files : list or None
             The files containing the target pitch
+        constant_stretch : float or None
+            A constant value for time-stretching
         fmin : int
             The minimum allowable frequency in Hz.
         fmax : int
@@ -172,18 +181,62 @@ def from_files_to_files(audio_files,
         vocode_fn(*item)
 
 
+def to_file(audio,
+            sample_rate,
+            output_file,
+            source_alignment=None,
+            target_alignment=None,
+            target_pitch=None,
+            constant_stretch=None,
+            fmin=FMIN,
+            fmax=FMAX):
+    """Performs pitch vocoding and saves audio to disk
+
+    Arguments
+        audio : np.array(shape=(samples,))
+            The speech signal to process
+        sample_rate : int
+            The audio sampling rate
+        output_file : string
+            The file to save the vocoded speech
+        source_alignment : pypar.Alignment
+            The current alignment if performing time-stretching
+        target_alignment : pypar.Alignment
+            The target alignment if performing time-stretching
+        target_pitch : np.array(shape=(frames,))
+            The target pitch contour
+        constant_stretch : float or None
+            A constant value for time-stretching
+        fmin : int
+            The minimum allowable frequency in Hz.
+        fmax : int
+            The maximum allowable frequency in Hz.
+    """
+    vocoded = vocode(audio,
+                     sample_rate,
+                     source_alignment,
+                     target_alignment,
+                     target_pitch,
+                     constant_stretch,
+                     fmin,
+                     fmax)
+
+    # Save
+    save(output_file, vocoded, sample_rate)
+
+
 def vocode(audio,
            sample_rate,
            source_alignment=None,
            target_alignment=None,
-           constant_stretch=None,
            target_pitch=None,
-           fmin=40,
-           fmax=500):
+           constant_stretch=None,
+           fmin=FMIN,
+           fmax=FMAX):
     """Performs pitch vocoding using Praat
 
     Arguments
-        audio : torch.tensor(shape=(1, time))
+        audio : np.array(shape=(samples,))
             The speech signal to process
         sample_rate : int
             The audio sampling rate.
@@ -191,23 +244,24 @@ def vocode(audio,
             The current alignment if performing time-stretching
         target_alignment : pypar.Alignment
             The target alignment if performing time-stretching
+        target_pitch : np.array(shape=(frames,))
+            The target pitch contour
         constant_stretch : float or None
             A constant value for time-stretching
-        target_pitch : torch.tensor(shape=(1, 1 + int(time / hopsize)))
-            The target pitch contour
         fmin : int
             The minimum allowable frequency in Hz.
         fmax : int
             The maximum allowable frequency in Hz.
 
     Returns
-        audio : torch.tensor(shape=(1, time))
+        audio : np.array(shape=(samples,))
             The vocoded audio
     """
     with tempfile.TemporaryDirectory() as tmpdir:
         # Time-stretch
-        if isinstance(source_alignment, pypar.Alignment) and \
-           isinstance(target_alignment, pypar.Alignment):
+        if constant_stretch is not None or \
+           (isinstance(source_alignment, pypar.Alignment) and \
+            isinstance(target_alignment, pypar.Alignment)):
             audio = time_stretch(audio,
                                  source_alignment,
                                  target_alignment,
@@ -234,7 +288,7 @@ def get_manipulation(audio, fmin, fmax, sample_rate, tmpdir):
     """Retrieve a praat manipulation context
 
     Arguments
-        audio : torch.tensor(shape=(1, time))
+        audio : np.array(shape=(samples,))
             The speech signal to process
         fmin : int
             The minimum allowable frequency in Hz.
@@ -251,7 +305,7 @@ def get_manipulation(audio, fmin, fmax, sample_rate, tmpdir):
     """
     # Write audio to disk
     audio_file = os.path.join(tmpdir, 'audio.wav')
-    torchaudio.save(audio_file, audio, sample_rate)
+    save(audio_file, audio, sample_rate)
 
     # Setup the source utterance for modulation
     return praat.call(
@@ -262,7 +316,7 @@ def pitch_shift(audio, pitch, fmin, fmax, sample_rate, tmpdir):
     """Perform praat pitch shifting on the manipulation
 
     Arguments
-        audio : torch.tensor(shape=(1, time))
+        audio : np.array(shape=(samples,))
             The speech signal to process
         pitch : np.array(shape=(frames,))
             The target pitch contour
@@ -276,7 +330,7 @@ def pitch_shift(audio, pitch, fmin, fmax, sample_rate, tmpdir):
             Directory to save intermediate values
 
     Returns
-        audio : torch.tensor(shape=(1, time))
+        audio : np.array(shape=(samples,))
             The pitch-shifted audio
     """
     # Don't edit in-place
@@ -287,7 +341,7 @@ def pitch_shift(audio, pitch, fmin, fmax, sample_rate, tmpdir):
 
     # Write pitch to disk
     pitch_file = os.path.join(tmpdir, 'pitch.txt')
-    write_pitch_tier(pitch_file, pitch, float(audio.size(1)) / sample_rate)
+    write_pitch_tier(pitch_file, pitch, float(len(audio)) / sample_rate)
 
     # Read pitch file into praat
     pitch_tier = Data.read(pitch_file)
@@ -299,10 +353,12 @@ def pitch_shift(audio, pitch, fmin, fmax, sample_rate, tmpdir):
     praat.call([pitch_tier, manipulation], "Replace pitch tier")
 
     # Resynthesize
-    audio = praat.call(manipulation, "Get resynthesis (overlap-add)")
+    return praat.call(manipulation, "Get resynthesis (overlap-add)").values[0]
 
-    # Convert to pytorch
-    return torch.tensor(audio.values[0]).unsqueeze(0)
+
+def save(file, audio, sample_rate):
+    """Save audio to disk"""
+    soundfile.write(file, audio, sample_rate)
 
 
 def time_stretch(audio,
@@ -316,7 +372,7 @@ def time_stretch(audio,
     """Perform praat time stretching on the manipulation
 
     Arguments
-        audio : torch.tensor(shape=(1, time))
+        audio : np.array(shape=(samples,))
             The speech signal to process
         alignment : pypar.Alignment
             The current alignment if performing time-stretching
@@ -334,15 +390,15 @@ def time_stretch(audio,
             Directory to save intermediate values
 
     Returns
-        audio : torch.tensor(shape=(1, time))
+        audio : np.array(shape=(samples,))
             The time-stretched audio
     """
     if constant_stretch is not None:
         # Audio start and end time
-        times = np.array([0., audio.shape[1] / sample_rate])
+        times = np.array([0., len(audio) / sample_rate])
 
         # Constant speed
-        rates = np.array([constant_stretch])
+        rates = np.array([1. / constant_stretch])
 
     else:
         # Phoneme start and end times
@@ -369,10 +425,7 @@ def time_stretch(audio,
     praat.call([duration_tier, manipulation], 'Replace duration tier')
 
     # Resynthesize
-    audio = praat.call(manipulation, "Get resynthesis (overlap-add)")
-
-    # Convert to pytorch
-    return torch.tensor(audio.values[0]).unsqueeze(0)
+    return praat.call(manipulation, "Get resynthesis (overlap-add)").values[0]
 
 
 def write_duration_tier(filename, times, rates, eps=1e-6):

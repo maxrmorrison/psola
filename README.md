@@ -30,7 +30,9 @@ loaded into memory, use `psola.vocode`. If you want to do this with audio
 saved in a file, use `psola.from_file`. You can use `psola.to_file` or
 `psola.from_file_to_file` to save the results to a file. To process many
 files at once with multiprocessing, use `psola.from_files_to_files`.
-Each of these functions is documented below.
+Each of these functions is documented below. The command-line interface
+wraps the arguments of `psola.from_files_to_files` and is described in
+the next section.
 
 
 ### `psola.vocode`
@@ -174,8 +176,6 @@ Arguments
 
 
 ## Command-line interface
-
-The command-line interface wraps the arguments of `psola.from_files_to_files`.
 
 ```
 usage: python -m psola

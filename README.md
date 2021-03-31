@@ -4,7 +4,8 @@
 <!-- [![Downloads](https://pepy.tech/badge/psola)](https://pepy.tech/project/psola) -->
 
 This module permits contant- and variable-rate pitch-shifting and
-time-stretching of speech. It is a wrapper around the `parselmouth` [1]
+time-stretching of speech. It is a wrapper around the
+[`parselmouth`](https://github.com/YannickJadoul/Parselmouth) [1]
 wrapper around the Praat [2] implementation of TD-PSOLA [3]. Pitch-shifting
 is performed by providing a numpy array of target pitch values equally spaced
 over time. Variable-rate time stretching uses forced phoneme alignment via

@@ -3,7 +3,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 <!-- [![Downloads](https://pepy.tech/badge/psola)](https://pepy.tech/project/psola) -->
 
-This module permits contant- and variable-rate pitch-shifting and
+This module is for constant- and variable-rate pitch-shifting and
 time-stretching of speech. It is a wrapper around the
 [`parselmouth`](https://github.com/YannickJadoul/Parselmouth) [1]
 wrapper around the Praat [2] implementation of TD-PSOLA [3]. Pitch-shifting

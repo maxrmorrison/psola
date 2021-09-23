@@ -1,7 +1,7 @@
 # Time-domain pitch-synchronous overlap-add (TD-PSOLA)
 [![PyPI](https://img.shields.io/pypi/v/psola.svg)](https://pypi.python.org/pypi/psola)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-<!-- [![Downloads](https://pepy.tech/badge/psola)](https://pepy.tech/project/psola) -->
+[![Downloads](https://pepy.tech/badge/psola)](https://pepy.tech/project/psola)
 
 This module is for constant- and variable-rate pitch-shifting and
 time-stretching of speech. It is a wrapper around the

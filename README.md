@@ -12,7 +12,7 @@ over time. Variable-rate time stretching uses forced phoneme alignment via
 [`pypar`](https://github.com/maxrmorrison/pypar).
 
 If you need to extract pitch features or phoneme alignments, see
-[`torchcrepe`](https://github.com/maxrmorrison/torchcrepe) for pitch estimation
+[`penn`](https://github.com/interactiveaudiolab/penn) for pitch estimation
 and [`pyfoal`](https://github.com/maxrmorrison/pyfoal) for forced alignment.
 If you only want to perform pitch-shifting, you do not need to extract
 forced alignments. If you want to do variable-rate time stretching, you do not
